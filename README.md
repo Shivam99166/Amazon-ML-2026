@@ -36,6 +36,7 @@ Amazon ml/
 ├── output/                  # Generated predictions & candidate pairs (ignored by Git)
 └── src/                     # Core pipeline source code
     ├── 01_inspect.py        # Dataset inspection & verification
+    ├── 01b_gt_analysis.py   # Ground-truth distribution & singleton analysis
     ├── 01_prepare.py        # Data cleaning & normalization
     ├── 03_blocking.py       # Candidate pair generation / blocking
     ├── 04_features.py       # Pairwise feature extraction
@@ -165,3 +166,34 @@ git push origin feature/blocking
 - Never remove `.gitignore` rules for datasets, `output/`, or `.venv/`.
 - Ensure all submission files conform to the exact format (`output/matching_results.tsv` and `output/candidate_pairs.tsv`).
 - Test scripts using local subsets before running full 12M-row pipelines.
+
+---
+
+## 9. Team Module Interfaces
+
+### Ownership & Responsibilities
+- **Teammate 2**: Data preparation & candidate blocking (`src/01_prepare.py`, `src/03_blocking.py`).
+- **Teammate 3**: Feature engineering & ML model training (`src/04_features.py`, `src/05_train.py`).
+- **Team Lead (Integration & Validation)**: Ground-truth analysis, validation metric & blocking recall (`src/06_validate.py`), prediction integration (`src/07_predict.py`), and submission packaging (`src/08_submission.py`).
+
+### Interface Contracts
+
+#### 1. Blocking Output (`03_blocking.py` → `04_features.py` / `07_predict.py`)
+Tab-separated candidate pairs file:
+```text
+s1_entity_id	candidate_entity_id	candidate_source
+```
+
+#### 2. Feature / Model Output (`04_features.py` / `05_train.py` → `07_predict.py`)
+Tab-separated scored candidate pairs file:
+```text
+s1_entity_id	candidate_entity_id	candidate_source	match_probability
+```
+
+#### 3. Final Prediction / Submission Output (`07_predict.py` / `08_submission.py`)
+Official tab-separated submission format (`output/matching_results.tsv`):
+```text
+source1_entity_id	matched_entity_ids
+```
+*(Comma-separated matched IDs for matched entities; empty string for singletons).*
+
